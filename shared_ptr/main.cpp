@@ -10,22 +10,12 @@ class shared_ptr {
 
     ~shared_ptr() {
       std::println("destructor called");
-      if (data && *reference_count == 1) {
-        delete data;
-        delete reference_count;
-      } else {
-        data = nullptr;
-        if  (reference_count) {
-          --(*reference_count);
-          reference_count = nullptr;
-        }
-      }
     }
 
     // Copy constructor - increment counter
     shared_ptr(const shared_ptr<T>& val) : data(val.data), reference_count(val.reference_count) {
       std::println("copy constructor called");
-      ++(*reference_count);
+      increment_reference();
     }
 
     // Move constructor
@@ -37,14 +27,20 @@ class shared_ptr {
 
     // Copy assign
     shared_ptr<T>& operator=(const shared_ptr<T>& val) {
+      // Self assignment guard!
+      if (this == &val) return *this;
+      remove_reference();
       std::println("copy assign called");
       data = val.data;
       reference_count = val.reference_count;
-      ++(*reference_count);
+      increment_reference();
       return *this;
     }
     // Move assign
     shared_ptr<T>& operator=(shared_ptr<T>&& val) {
+      // Self assignment guard!
+      if (this == &val) return *this;
+      remove_reference();
       std::println("move assign called");
       data = val.data;
       reference_count = val.reference_count;
@@ -67,8 +63,27 @@ class shared_ptr {
       }
     }
   private:
+    void remove_reference() {
+      if (data && *reference_count == 1) {
+        delete data;
+        delete reference_count;
+      } else {
+        data = nullptr;
+        if  (reference_count) {
+          --(*reference_count);
+          reference_count = nullptr;
+        }
+      }
+    }
+
+    void increment_reference() {
+      if (data) {
+        ++(*reference_count);
+      }
+    }
+
     T* data;
-    T* reference_count;
+    int* reference_count;
 };
 
 int main() {
@@ -118,7 +133,5 @@ int main() {
     std::println("----------Destructor----------");
     b.print_val();
   }
-
-
 
 }
