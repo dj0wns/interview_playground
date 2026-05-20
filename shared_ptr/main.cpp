@@ -10,6 +10,7 @@ class shared_ptr {
 
     ~shared_ptr() {
       std::println("destructor called");
+      remove_reference();
     }
 
     // Copy constructor - increment counter
