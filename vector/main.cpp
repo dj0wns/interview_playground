@@ -14,14 +14,14 @@ class vector {
       for (auto i{0}; i < size; ++i){
         init_at_index(i);
       }
+      buffer_size = size;
+      vector_size = size;
+
     }
 
     ~vector() {
       std::println("Destructor triggered");
-      for (auto i{0}; i < vector_size; ++i) {
-        std::println("Deleting element at [{}]", i);
-        buffer[i].~T();
-      }
+      destruct_elements();
       std::println("Freeing memory");
       ::operator delete(buffer);
     }
@@ -63,11 +63,19 @@ class vector {
       for (auto i{0}; i < vector_size; ++i) {
         new (&new_buffer[i]) T(std::move_if_noexcept(buffer[i]));
       }
+      destruct_elements();
       if (buffer) {
         ::operator delete(buffer);
       }
       buffer = new_buffer;
       buffer_size = new_size;
+    }
+
+    void destruct_elements() {
+      for (auto i{0}; i < vector_size; ++i) {
+        std::println("Deleting element at [{}]", i);
+        buffer[i].~T();
+      }
     }
 
     T* allocate_new_buffer(int count) {
