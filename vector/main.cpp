@@ -23,7 +23,7 @@ class vector {
         buffer[i].~T();
       }
       std::println("Freeing memory");
-      free(buffer);
+      ::operator delete(buffer);
     }
 
     void reserve(int size) {
@@ -32,7 +32,7 @@ class vector {
         return;
       }
       auto new_buffer = allocate_new_buffer(size);
-      move_from_old_to_new(new_buffer);
+      move_from_old_to_new(new_buffer, size);
     }
 
 
@@ -61,10 +61,10 @@ class vector {
     void move_from_old_to_new(T* new_buffer, int new_size) {
       std::println("Copying to new buffer: {}", int(new_buffer));
       for (auto i{0}; i < vector_size; ++i) {
-        new_buffer[i] = std::move_if_noexcept(buffer[i]);
+        new (&new_buffer[i]) T(std::move_if_noexcept(buffer[i]));
       }
       if (buffer) {
-        free(buffer);
+        ::operator delete(buffer);
       }
       buffer = new_buffer;
       buffer_size = new_size;
